@@ -367,7 +367,7 @@ window.STORIES = [
   id: "s1", template: "Rehearse", title: "Getting a Shot Tomorrow",
   prompt: "Leo is getting a shot tomorrow. He told me he feels a little scared.",
   about: "Little Bear goes to the doctor with Leo's help.",
-  img: { cover: "s1_cover", open: "s1_0", n1: "s1_1", n2: "s1_2", n3: "s1_3", end: "s1_4" },
+  img: { cover: "s1_cover", open: "s1_0", n1: "s1_1", n2: "s1_3", n3: "s1_4", end: "s1_2" },
   open: ["Leo, when you wake up tomorrow, you and Mama will see the doctor.", "Little Bear is going to see the doctor too.", "Let's go with him!"],
   nodes: [
     { type: "voice", title: "Comfort Little Bear", label: "Voice interaction",
@@ -466,7 +466,9 @@ window.STORIES = [
 "use strict";
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
-const IMG = window.IMG, AUD = window.AUD, DUR = window.DUR, STORIES = window.STORIES;
+const IMG = window.IMG, AUD = window.AUD, DUR = window.DUR;
+// only stories with finished illustrations are shown in the demo
+const STORIES = window.STORIES.filter(st => (IMG[st.img.cover] || "").length > 8000);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const q2 = s => "“" + s.replace(/^"|"$/g, "") + "”";
 
@@ -1326,7 +1328,7 @@ NT.addEventListener("click", () => {
 /* ---------------- presenter keys ---------------- */
 const HELP = $("#help");
 function helpHtml() {
-  return "<div><b>1 2 3</b>next story: " + esc(cur().title) + "</div><div><b>R</b>reset</div><div><b>P</b>pause / resume</div>" +
+  return "<div><b>Story</b>" + esc(cur().title) + "</div><div><b>R</b>reset</div><div><b>P</b>pause / resume</div>" +
     "<div><b>K</b>press the orange button: start, then record</div><div><b>Space</b>child spoke</div><div><b>← →</b>pull left / right ear</div>" +
     "<div><b>N</b>skip ahead</div><div><b>M</b>mic " + (MIC.on ? "on" : "off") + (MIC.stream ? "" : " (no access)") + "</div>" +
     '<div class="s">? hide</div>';
@@ -1342,7 +1344,7 @@ function reset() {
 document.addEventListener("keydown", e => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
   const k = e.key;
-  if (k === "1" || k === "2" || k === "3") { S.cur = +k - 1; }
+  if (k === "1" || k === "2" || k === "3") { S.cur = Math.min(+k - 1, STORIES.length - 1); }
   else if (k === "r" || k === "R") reset();
   else if (k === "p" || k === "P") setPause(!RT.paused);
   else if (k === " ") { e.preventDefault(); force = true; }
