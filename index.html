@@ -78,6 +78,9 @@ svg{display:block}
 .ta{position:relative;height:164px;border:1px solid #DADCE0;border-radius:14px;padding:12px 16px;
     font-size:17px;line-height:1.6;cursor:text}
 .ta .ph{color:#9AA0AB}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px}
+.chip{font-size:12.5px;padding:5px 11px;border-radius:14px;border:1px solid #E2DED9;background:#fff;color:#514D48;cursor:pointer}
+.chip.on{background:#FFF0EB;border-color:#FF5B3A;color:#D6452B}
 .ta .cur{display:inline-block;width:2px;height:20px;background:var(--or);vertical-align:-4px;margin-left:1px;
          animation:bl 1s steps(1) infinite}
 @keyframes bl{50%{opacity:0}}
@@ -364,7 +367,7 @@ window.DUR={"s1_end_L": 11.66, "s1_end_N": 8.64, "s1_end_R": 11.33, "s1_n1_ack":
 /* MiBuddy demo stories. Text = 演示用三个故事 doc, 2026-10-15 */
 window.STORIES = [
 {
-  id: "s1", template: "Rehearse", title: "Getting a Shot Tomorrow",
+  id: "s1", template: "Rehearse", title: "Getting a Shot Tomorrow", chip: "A shot tomorrow",
   prompt: "Leo is getting a shot tomorrow. He told me he feels a little scared.",
   about: "Little Bear goes to the doctor with Leo's help.",
   img: { cover: "s1_cover", open: "s1_0", n1: "s1_1", n2: "s1_3", n3: "s1_4", end: "s1_2" },
@@ -396,7 +399,7 @@ window.STORIES = [
     N: ["Little Bear gets a star bandage and a big hug.", "Leo, at the doctor, you can sit on Mama's lap too.", "Then: all done!"] }
 },
 {
-  id: "s2", template: "Practice", title: "Little Bear's Shoes",
+  id: "s2", template: "Practice", title: "Little Bear's Shoes", chip: "Shoes on by himself",
   prompt: "Leo put on his shoes all by himself today for the first time!",
   about: "Leo helps Little Bear put on his shoes by himself.",
   img: { cover: "s2_cover", open: "s2_0", n1: "s2_1", n2: "s2_2", n3: "s2_3", end: "s2_4" },
@@ -428,7 +431,7 @@ window.STORIES = [
     N: ["Little Bear stomps his new shoes, stomp, stomp, and runs to the park.", "Leo, you did it all by yourself today.", "Little Bear did too!"] }
 },
 {
-  id: "s3", template: "Comfort", title: "The Tower Fell Down",
+  id: "s3", template: "Comfort", title: "The Tower Fell Down", chip: "The tower fell down",
   prompt: "Leo's block tower fell down today and he got really angry.",
   about: "Little Bear feels mad, finds a way to calm down, and tries again.",
   img: { cover: "s3_cover", open: "s3_0", n1: "s3_1", n2: "s3_2", n3: "s3_3", end: "s3_4" },
@@ -612,7 +615,7 @@ const TXT = (en, zh) => NL === "zh" ? zh : en;
 const HINTS = {
   home: ["START HERE", "One line about today becomes tonight’s story. Pick who is with Leo tonight, then go to <b>Create</b>.", "从这里开始。白天记一句今天的事，就是今晚的故事。先选今晚谁陪 Leo，再点 <b>Create</b>。"],
   create: ["CREATE", "Tap <b>Add a moment from today</b>.", "点 <b>Add a moment from today</b>。"],
-  c02: ["ONE LINE", "Tap the box to type the line, or tap the mic to say it. Style only sets the tone. Then <b>Generate Story</b>.", "点输入框打字，或点麦克风说一句。风格只影响语气。然后点 <b>Generate Story</b>。"],
+  c02: ["ONE LINE", "Tap the box to type the line, or tap the mic to say it. The three chips under the box pick which moment to use. Then <b>Generate Story</b>.", "点输入框打字，或点麦克风说一句。框下面三个小标签可以换一件今天的事。然后点 <b>Generate Story</b>。"],
   c03: ["THE STORY", "The line and Leo’s profile go into a story template with three fixed pauses. About a minute.", "这句话和 Leo 的档案进入一个有三个固定停顿的故事模板。大约一分钟。"],
   c04: ["REVIEW", "A short story with three pauses. The second one is a choice made with the ears. Tap <b>Preview Story</b> to read it, then confirm.", "一个短故事，三个停顿，第二个用耳朵二选一。点 <b>Preview Story</b> 读一遍，再确认。"],
   preview: ["PREVIEW", "Tap the right half to turn the page. The parent reads exactly what the device will say.", "点右半边翻页。家长看到的，就是设备会讲的。"],
@@ -763,7 +766,8 @@ const SCR = {
     const body = d.text ? esc(d.text) : '<span class="ph">What happened today? One line is enough.</span>';
     return { html: TOP + navHd("Tonight’s Story", kid(true)) + '<div class="bd">' +
       '<div class="card" style="margin-top:12px"><div class="ctit">A moment from today</div>' +
-      '<div class="ta" data-act="type"><span class="tx">' + body + '</span><button class="mic" data-act="mic">' + I.mic() + "</button></div></div>" +
+      '<div class="ta" data-act="type"><span class="tx">' + body + '</span><button class="mic" data-act="mic">' + I.mic() + "</button></div>" +
+      '<div class="chips"><span class="mut" style="font-size:12.5px">Recent moments</span>' + STORIES.map((st, i) => '<button class="chip' + (i === S.cur ? " on" : "") + '" data-act="pick" data-v="' + i + '">' + esc(st.chip || st.title) + "</button>").join("") + "</div></div>" +
       '<div class="card" style="margin-top:16px"><div class="ctit" style="margin-bottom:4px">Style</div>' +
       styles.map((s, i) => '<div class="opt' + (i === d.style ? " on" : "") + '" data-act="style" data-v="' + i + '">' + esc(s) + "<i></i></div>").join("") + "</div>" +
       '<div class="card" style="margin-top:16px"><div class="ctit" style="display:flex;justify-content:space-between">' +
@@ -982,6 +986,7 @@ const ACT = {
   },
   new() { S.draft = { text: "", style: 0, done: false }; push("c02"); },
   type() { typeIdea(false); },
+  pick(el, e) { e.stopPropagation(); if (typing) return; S.cur = +el.dataset.v; S.draft = { text: "", style: S.draft.style, done: false }; show("c02", {}, "none"); typeIdea(false); },
   mic(el, e) { e.stopPropagation(); typeIdea(true); },
   style(el) { S.draft.style = +el.dataset.v; $$(".opt", curEl).forEach(o => o.classList.toggle("on", o === el)); },
   gen() { if (!S.draft.done) return; push("c03"); },
